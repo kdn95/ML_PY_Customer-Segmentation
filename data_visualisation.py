@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.cluster import KMeans
+from mpl_toolkits.mplot3d import Axes3D
 import argparse
 
 
@@ -155,6 +156,11 @@ def cluster_age_ss(age_score_data):
    plt.figure(figsize=(12,6))
    plt.grid()
    plt.plot(range(1,11), wcss, linewidth = 2, color = 'red', marker = '8')
+   # Add a horizontal dotted line for each WCSS value
+   for i, w in enumerate(wcss):
+       plt.axhline(y=w, color='blue', linestyle='dotted', linewidth=1)
+   
+   plt.title('Number of Clusters based on K Value against WCSS for Age v. SS')
    plt.xlabel('K Value')
    plt.ylabel('WCSS')
    plt.show()
@@ -170,8 +176,6 @@ def kmean_age_ss(age_score_data):
    
    print(kmeans.cluster_centers_)
    
-   # Visualize our clusters(basically different groups):
-   
    plt.scatter(age_score_data[:,0],age_score_data[:,1], c=kmeans.labels_,cmap = 'rainbow')
    plt.scatter(kmeans.cluster_centers_[:,0], kmeans.cluster_centers_[:,1], color = 'black')
    plt.title('Kmeans Age vs. Spending Score')
@@ -182,18 +186,24 @@ def kmean_age_ss(age_score_data):
 def cluster_income_ss(income_score_data):
    wcss=[]
    for k in range(1,11):
-      kmeans = KMeans(n_clusters = k, init = 'k-means++')
+      kmeans = KMeans(n_clusters = k, init = 'k-means++', random_state=42)
       kmeans.fit(income_score_data)
       wcss.append(kmeans.inertia_)
 
    plt.figure(figsize=(12,6))
    plt.grid()
    plt.plot(range(1,11), wcss, linewidth = 2, color = 'red', marker = '8')
+   # Add a horizontal dotted line for each WCSS value
+   for i, w in enumerate(wcss):
+       plt.axhline(y=w, color='blue', linestyle='dotted', linewidth=1)
+
+   plt.title('Number of Clusters based on K Value against WCSS for Age v. SS')
    plt.xlabel('K Value')
    plt.ylabel('WCSS')
    plt.show()
 
 def kmean_income_ss(income_score_data):
+   # Based on an arbitrary guess from a visual review of the curve n_clusters = 5
    kmeans = KMeans(n_clusters = 5)
    label = kmeans.fit_predict(income_score_data)
 
@@ -208,6 +218,48 @@ def kmean_income_ss(income_score_data):
    plt.ylabel('Spending Score (1-100)')
    plt.show()
 
+# Cluster for all columns 
+def cluster_all(all_data_columns):
+   wcss=[]
+   for k in range(1,11):
+    kmeans = KMeans(n_clusters = k, init = 'k-means++')
+    kmeans.fit(all_data_columns)
+    wcss.append(kmeans.inertia_)
+   plt.figure(figsize=(12,6))
+   plt.grid()
+   plt.plot(range(1,11), wcss, linewidth = 2, color = 'red', marker = '8')
+   plt.xlabel('K Value')
+   plt.ylabel('WCSS')
+   plt.show()
+
+def kmean_all(all_data_columns, data):
+   # Based on an arbitrary guess from a visual review of the curve n_clusters = 5
+   kmeans = KMeans(n_clusters=5)
+   
+   label = kmeans.fit_predict(all_data_columns)
+
+   print(label)
+
+   print(kmeans.cluster_centers_)
+
+   clusters = kmeans.fit_predict(all_data_columns)
+   data['label'] = clusters
+
+   fig = plt.figure(figsize=(20, 10))
+   ax = fig.add_subplot(111, projection='3d')
+   ax.scatter(data.Age[data.label == 0], data['Annual Income (k$)'][data.label == 0], data['Spending Score (1-100)'][data.label == 0], c='blue', s=60)
+   ax.scatter(data.Age[data.label == 1], data['Annual Income (k$)'][data.label == 1], data['Spending Score (1-100)'][data.label == 1], c = 'red', s = 60)
+   ax.scatter(data.Age[data.label == 2], data['Annual Income (k$)'][data.label == 2], data['Spending Score (1-100)'][data.label == 2], c = 'green', s = 60)
+   ax.scatter(data.Age[data.label == 3], data['Annual Income (k$)'][data.label == 3], data['Spending Score (1-100)'][data.label == 3], c = 'orange', s = 60)
+   ax.scatter(data.Age[data.label == 4], data['Annual Income (k$)'][data.label == 4], data['Spending Score (1-100)'][data.label == 4], c = 'purple', s = 60)
+   ax.view_init(30,185)
+
+   ax.title('ProjectMe')
+   plt.xlabel('Age')
+   plt.ylabel('Annual Income')
+   ax.set_zlabel('Spending Score (1-100)')
+
+   plt.show()
 
 def main():
   parser = argparse.ArgumentParser(description="Customer Segmentation Script")
@@ -223,8 +275,10 @@ def main():
   parser.add_argument("--rel-income-ss", action="store_true", help="See relplot for annual income vs. spending score")
   parser.add_argument("--cluster-age-ss", action="store_true", help="See number of clusters/centroid groups")
   parser.add_argument("--kmean-age-ss", action="store_true", help="See number of clusters/centroid groups")
-  parser.add_argument("--cluster-income-age-ss", action="store_true", help="See number of clusters/centroid groups")
+  parser.add_argument("--cluster-income-ss", action="store_true", help="See number of clusters/centroid groups")
   parser.add_argument("--kmean-income-ss", action="store_true", help="See number of clusters/centroid groups")
+  parser.add_argument("--cluster-all", action="store_true", help="See number of clusters/centroid groups")
+  parser.add_argument("--kmean-all", action="store_true", help="See number of clusters/centroid groups")
   args = parser.parse_args()
 
   # load dataset from csv file from panda
@@ -239,6 +293,9 @@ def main():
 
   # Income & score column as Numpy array
   X2 = clean_dataset.loc[:,['Annual Income (k$)','Spending Score (1-100)']].values
+
+  # All columns
+  X3 = clean_dataset.iloc[:,1:]
 
   # Perform tasks based on arguments
   if args.inspect:
@@ -261,7 +318,10 @@ def main():
       cluster_income_ss(X2)
   if args.kmean_income_ss:
       kmean_income_ss(X2)
-      
+  if args.cluster_all:
+      cluster_all(X3)
+  if args.kmean_all:
+      kmean_all(X3)    
 
 if __name__ == "__main__":
   main()
