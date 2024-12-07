@@ -129,19 +129,61 @@ def rel_plot_income_spending_score(data):
    plt.title('Relation between Income vs. Spending Score')
    plt.show()
 
+
 # Clusters based on Age & Spending Score
-def cluster_number(age_score_data):
+def cluster_age_ss(age_score_data):
    # create within-cluster sum of squares as empty list
    wcss = []
    # try to find different number of clusters
    for k in range(1, 11):
       # Create a K-means model
       # init method used to initialize clusters
-      kmeans = KMeans(n_clusters=k, init='k-means++')
+      kmeans = KMeans(n_clusters=k, init='k-means++', random_state=42)
       # X1 will be a 2D array
       kmeans.fit(age_score_data)
       # inertia stores WCSS values - sum of squared distances from
       # each point to assigned centroid
+      wcss.append(kmeans.inertia_)
+  #  # finding the elbow point from elbow method
+  #  wcss_diff = np.diff(wcss)
+
+  #  rate_of_change = np.diff(wcss_diff)
+
+  #  elbow_point = np.argmax(rate_of_change) + 2
+  #  print(f"Optimal number of clusters based on elbow: {elbow_point}")
+
+   plt.figure(figsize=(12,6))
+   plt.grid()
+   plt.plot(range(1,11), wcss, linewidth = 2, color = 'red', marker = '8')
+   plt.xlabel('K Value')
+   plt.ylabel('WCSS')
+   plt.show()
+
+  #  return elbow_point
+# Kmeans model on Age & Spending Score
+def kmean_age_ss(age_score_data):
+   # Based on an arbitrary guess from a visual review of the curve n_clusters = 4
+   kmeans = KMeans(n_clusters = 4)
+   label = kmeans.fit_predict(age_score_data)
+   
+   print(label)
+   
+   print(kmeans.cluster_centers_)
+   
+   # Visualize our clusters(basically different groups):
+   
+   plt.scatter(age_score_data[:,0],age_score_data[:,1], c=kmeans.labels_,cmap = 'rainbow')
+   plt.scatter(kmeans.cluster_centers_[:,0], kmeans.cluster_centers_[:,1], color = 'black')
+   plt.title('Kmeans Age vs. Spending Score')
+   plt.xlabel('Age')
+   plt.ylabel('Spending Score (1-100)')
+   plt.show()
+# Clusters based on Income & Spending Score
+def cluster_income_ss(income_score_data):
+   wcss=[]
+   for k in range(1,11):
+      kmeans = KMeans(n_clusters = k, init = 'k-means++')
+      kmeans.fit(income_score_data)
       wcss.append(kmeans.inertia_)
 
    plt.figure(figsize=(12,6))
@@ -151,7 +193,20 @@ def cluster_number(age_score_data):
    plt.ylabel('WCSS')
    plt.show()
 
+def kmean_income_ss(income_score_data):
+   kmeans = KMeans(n_clusters = 5)
+   label = kmeans.fit_predict(income_score_data)
 
+   print(label)
+
+   print(kmeans.cluster_centers_)
+
+   plt.scatter(income_score_data[:,0],income_score_data[:,1], c=kmeans.labels_,cmap = 'rainbow')
+   plt.scatter(kmeans.cluster_centers_[:,0], kmeans.cluster_centers_[:,1], color = 'black')
+   plt.title('ProjectGurukul')
+   plt.xlabel('Annual Income')
+   plt.ylabel('Spending Score (1-100)')
+   plt.show()
 
 
 def main():
@@ -166,8 +221,10 @@ def main():
   parser.add_argument("--annual-income", action="store_true", help="See the annual income distribution")
   parser.add_argument("--spending-score", action="store_true", help="See the spending score distribution")
   parser.add_argument("--rel-income-ss", action="store_true", help="See relplot for annual income vs. spending score")
-  parser.add_argument("--cluster-number", action="store_true", help="See number of clusters/centroid groups")
-  
+  parser.add_argument("--cluster-age-ss", action="store_true", help="See number of clusters/centroid groups")
+  parser.add_argument("--kmean-age-ss", action="store_true", help="See number of clusters/centroid groups")
+  parser.add_argument("--cluster-income-age-ss", action="store_true", help="See number of clusters/centroid groups")
+  parser.add_argument("--kmean-income-ss", action="store_true", help="See number of clusters/centroid groups")
   args = parser.parse_args()
 
   # load dataset from csv file from panda
@@ -179,6 +236,9 @@ def main():
 
   # Age & score column as Numpy array
   X1 = clean_dataset.loc[:, ['Age', 'Spending Score (1-100)']].values
+
+  # Income & score column as Numpy array
+  X2 = clean_dataset.loc[:,['Annual Income (k$)','Spending Score (1-100)']].values
 
   # Perform tasks based on arguments
   if args.inspect:
@@ -193,8 +253,15 @@ def main():
       annual_income(clean_dataset)
   if args.rel_income_ss:
       rel_plot_income_spending_score(clean_dataset)
-  if args.cluster_number:
-      cluster_number(X1)
+  if args.cluster_age_ss:
+      cluster_age_ss(X1)
+  if args.kmean_age_ss:
+      kmean_age_ss(X1)
+  if args.cluster_income_ss:
+      cluster_income_ss(X2)
+  if args.kmean_income_ss:
+      kmean_income_ss(X2)
+      
 
 if __name__ == "__main__":
   main()
