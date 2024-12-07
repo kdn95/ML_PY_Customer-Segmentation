@@ -61,6 +61,7 @@ def plot_gender(data):
   plt.figure(figsize=(15, 5))
   sns.countplot(y='Gender', data=data)
   plt.title('Gender Distribution')
+  # plt.savefig('gender_plot.png')
   plt.show()
 
 # Age Distribution Plot
@@ -234,7 +235,7 @@ def cluster_all(all_data_columns):
 
 def kmean_all(all_data_columns, data):
    # Based on an arbitrary guess from a visual review of the curve n_clusters = 5
-   kmeans = KMeans(n_clusters=5)
+   kmeans = KMeans(n_clusters=6)
    
    label = kmeans.fit_predict(all_data_columns)
 
@@ -254,7 +255,7 @@ def kmean_all(all_data_columns, data):
    ax.scatter(data.Age[data.label == 4], data['Annual Income (k$)'][data.label == 4], data['Spending Score (1-100)'][data.label == 4], c = 'purple', s = 60)
    ax.view_init(30,185)
 
-   ax.title('ProjectMe')
+   plt.title('K-means clustering for Segmentation of Customers')
    plt.xlabel('Age')
    plt.ylabel('Annual Income')
    ax.set_zlabel('Spending Score (1-100)')
@@ -321,7 +322,7 @@ def main():
   if args.cluster_all:
       cluster_all(X3)
   if args.kmean_all:
-      kmean_all(X3)    
+      kmean_all(X3, clean_dataset)
 
 if __name__ == "__main__":
   main()
