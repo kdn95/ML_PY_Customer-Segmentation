@@ -235,7 +235,7 @@ def cluster_all(all_data_columns):
 
 def kmean_all(all_data_columns, data):
    # Based on an arbitrary guess from a visual review of the curve n_clusters = 5
-   kmeans = KMeans(n_clusters=6)
+   kmeans = KMeans(n_clusters=5)
    
    label = kmeans.fit_predict(all_data_columns)
 
