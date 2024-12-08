@@ -83,6 +83,7 @@ def age_group(data):
   plt.title('Customer Age Distribution')
   plt.xlabel('Age')
   plt.ylabel('Number of Customers')
+  # plt.savefig('<name_of_function>.png')
   plt.show()
 
 # Annual Income Distribution Plot
@@ -103,6 +104,7 @@ def annual_income(data):
   plt.title('Annual Income Distribution')
   plt.xlabel('Income')
   plt.ylabel('Number of Customer')
+  # plt.savefig('<name_of_function>.png')
   plt.show()
 
 def spending_score(data):
@@ -121,6 +123,7 @@ def spending_score(data):
   plt.title('Spending Score Distribution')
   plt.xlabel('Score')
   plt.ylabel('Number of Customer')
+  # plt.savefig('<name_of_function>.png')
   plt.show()
 
 
@@ -129,6 +132,7 @@ def rel_plot_income_spending_score(data):
    sns.relplot(x='Annual Income (k$)', y='Spending Score (1-100)', data=data, kind='scatter', height=7, aspect=1.7, hue=None)
    plt.grid()
    plt.title('Relation between Income vs. Spending Score')
+  # plt.savefig('<name_of_function>.png')
    plt.show()
 
 
@@ -164,6 +168,7 @@ def cluster_age_ss(age_score_data):
    plt.title('Number of Clusters based on K Value against WCSS for Age v. SS')
    plt.xlabel('K Value')
    plt.ylabel('WCSS')
+   # plt.savefig('<name_of_function>.png')
    plt.show()
 
   #  return elbow_point
@@ -182,6 +187,7 @@ def kmean_age_ss(age_score_data):
    plt.title('Kmeans Age vs. Spending Score')
    plt.xlabel('Age')
    plt.ylabel('Spending Score (1-100)')
+   # plt.savefig('<name_of_function>.png')
    plt.show()
 # Clusters based on Income & Spending Score
 def cluster_income_ss(income_score_data):
@@ -201,6 +207,7 @@ def cluster_income_ss(income_score_data):
    plt.title('Number of Clusters based on K Value against WCSS for Age v. SS')
    plt.xlabel('K Value')
    plt.ylabel('WCSS')
+   # plt.savefig('<name_of_function>.png')
    plt.show()
 
 def kmean_income_ss(income_score_data):
@@ -217,6 +224,7 @@ def kmean_income_ss(income_score_data):
    plt.title('ProjectGurukul')
    plt.xlabel('Annual Income')
    plt.ylabel('Spending Score (1-100)')
+   # plt.savefig('<name_of_function>.png')
    plt.show()
 
 # Cluster for all columns 
@@ -231,6 +239,7 @@ def cluster_all(all_data_columns):
    plt.plot(range(1,11), wcss, linewidth = 2, color = 'red', marker = '8')
    plt.xlabel('K Value')
    plt.ylabel('WCSS')
+   # plt.savefig('<name_of_function>.png')
    plt.show()
 
 def kmean_all(all_data_columns, data):
@@ -259,7 +268,7 @@ def kmean_all(all_data_columns, data):
    plt.xlabel('Age')
    plt.ylabel('Annual Income')
    ax.set_zlabel('Spending Score (1-100)')
-
+   # plt.savefig('<name_of_function>.png')
    plt.show()
 
 def main():
