@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.cluster import KMeans
 from mpl_toolkits.mplot3d import Axes3D
+from sklearn.metrics import silhouette_score, davies_bouldin_score
 import argparse
 
 
@@ -47,7 +48,7 @@ def data_visual(clean_dataset):
     plt.title('Histplot for {}'.format(x))
 
   # # Save figure to file .png
-  # plt.savefig('dataset_visual.png')
+  plt.savefig('dataset_visual.png')
 
   # Show plots
   plt.show()
@@ -83,7 +84,7 @@ def age_group(data):
   plt.title('Customer Age Distribution')
   plt.xlabel('Age')
   plt.ylabel('Number of Customers')
-  # plt.savefig('<name_of_function>.png')
+  plt.savefig('age.png')
   plt.show()
 
 # Annual Income Distribution Plot
@@ -132,46 +133,72 @@ def rel_plot_income_spending_score(data):
    sns.relplot(x='Annual Income (k$)', y='Spending Score (1-100)', data=data, kind='scatter', height=7, aspect=1.7, hue=None)
    plt.grid()
    plt.title('Relation between Income vs. Spending Score')
-  # plt.savefig('<name_of_function>.png')
+   plt.savefig('rel_income_ss.png')
    plt.show()
 
 
 # Clusters based on Age & Spending Score
 def cluster_age_ss(age_score_data):
-   # create within-cluster sum of squares as empty list
+
+   silhouette_scores = []
+   davies_bouldin_indices = []
    wcss = []
-   # try to find different number of clusters
-   for k in range(1, 11):
-      # Create a K-means model
-      # init method used to initialize clusters
-      kmeans = KMeans(n_clusters=k, init='k-means++', random_state=42)
-      # X1 will be a 2D array
-      kmeans.fit(age_score_data)
-      # inertia stores WCSS values - sum of squared distances from
-      # each point to assigned centroid
-      wcss.append(kmeans.inertia_)
-  #  # finding the elbow point from elbow method
-  #  wcss_diff = np.diff(wcss)
-
-  #  rate_of_change = np.diff(wcss_diff)
-
-  #  elbow_point = np.argmax(rate_of_change) + 2
-  #  print(f"Optimal number of clusters based on elbow: {elbow_point}")
-
-   plt.figure(figsize=(12,6))
-   plt.grid()
-   plt.plot(range(1,11), wcss, linewidth = 2, color = 'red', marker = '8')
-   # Add a horizontal dotted line for each WCSS value
-   for i, w in enumerate(wcss):
-       plt.axhline(y=w, color='blue', linestyle='dotted', linewidth=1)
    
-   plt.title('Number of Clusters based on K Value against WCSS for Age v. SS')
-   plt.xlabel('K Value')
-   plt.ylabel('WCSS')
-   # plt.savefig('<name_of_function>.png')
-   plt.show()
+   # Loop through a range of K values
+   for k in range(2, 11):  # Silhouette and Davies-Bouldin need > 2 clusters
+       # Create and fit KMeans model
+       kmeans = KMeans(n_clusters=k, init='k-means++', random_state=42)
+       labels = kmeans.fit_predict(age_score_data)
+       
+       # WCSS
+       wcss.append(kmeans.inertia_)
+       
+       # Calculate Silhouette score
+       silhouette = silhouette_score(age_score_data, labels)
+       silhouette_scores.append(silhouette)
+       
+       # Calculate DB Index
+       davies_bouldin = davies_bouldin_score(age_score_data, labels)
+       davies_bouldin_indices.append(davies_bouldin)
+   
 
-  #  return elbow_point
+   plt.figure(figsize=(12, 6))
+   plt.plot(range(2, 11), wcss, marker='o', label='WCSS')
+   plt.title('Elbow Method for Optimal K (WCSS)')
+   plt.xlabel('Number of Clusters (K)')
+   plt.ylabel('WCSS')
+   plt.legend()
+   plt.grid(True)
+   plt.show()
+   
+   # Silhouette score
+   plt.figure(figsize=(12, 6))
+   plt.plot(range(2, 11), silhouette_scores, marker='o', label='Silhouette Score', color='green')
+   plt.title('Silhouette Score for Optimal K')
+   plt.xlabel('Number of Clusters (K)')
+   plt.ylabel('Silhouette Score')
+   plt.legend()
+   plt.grid(True)
+   plt.show()
+   
+   # DB Index
+   plt.figure(figsize=(12, 6))
+   plt.plot(range(2, 11), davies_bouldin_indices, marker='o', label='Davies-Bouldin Index', color='purple')
+   plt.title('Davies-Bouldin Index for Optimal K')
+   plt.xlabel('Number of Clusters (K)')
+   plt.ylabel('Davies-Bouldin Index')
+   plt.legend()
+   plt.grid(True)
+   plt.show()
+   
+
+   optimal_k_silhouette = np.argmax(silhouette_scores) + 2  
+   print(f"Optimal K based on Silhouette Score: {optimal_k_silhouette}")
+   
+   
+   optimal_k_davies_bouldin = np.argmin(davies_bouldin_indices) + 2
+   print(f"Optimal K based on Davies-Bouldin Index: {optimal_k_davies_bouldin}")
+
 # Kmeans model on Age & Spending Score
 def kmean_age_ss(age_score_data):
    # Based on an arbitrary guess from a visual review of the curve n_clusters = 4
@@ -187,64 +214,112 @@ def kmean_age_ss(age_score_data):
    plt.title('Kmeans Age vs. Spending Score')
    plt.xlabel('Age')
    plt.ylabel('Spending Score (1-100)')
-   # plt.savefig('<name_of_function>.png')
+   plt.savefig('kmean_age_ss.png')
    plt.show()
 # Clusters based on Income & Spending Score
 def cluster_income_ss(income_score_data):
-   wcss=[]
-   for k in range(1,11):
-      kmeans = KMeans(n_clusters = k, init = 'k-means++', random_state=42)
-      kmeans.fit(income_score_data)
-      wcss.append(kmeans.inertia_)
 
-   plt.figure(figsize=(12,6))
-   plt.grid()
-   plt.plot(range(1,11), wcss, linewidth = 2, color = 'red', marker = '8')
-   # Add a horizontal dotted line for each WCSS value
-   for i, w in enumerate(wcss):
-       plt.axhline(y=w, color='blue', linestyle='dotted', linewidth=1)
+    wcss = []
+    silhouette_scores = []
+    davies_bouldin_indices = []
+    
+    for k in range(1, 11):
+        kmeans = KMeans(n_clusters=k, init='k-means++', random_state=42)
+        kmeans.fit(income_score_data)
+        wcss.append(kmeans.inertia_)
+        
+        if k > 1:  
+            labels = kmeans.labels_
+            silhouette = silhouette_score(income_score_data, labels)
+            davies_bouldin = davies_bouldin_score(income_score_data, labels)
+            silhouette_scores.append(silhouette)
+            davies_bouldin_indices.append(davies_bouldin)
+    
+    # Plot WCSS (Elbow Method)
+    plt.figure(figsize=(12, 6))
+    plt.plot(range(1, 11), wcss, linewidth=2, color='red', marker='8', label='WCSS')
+    plt.title('Number of Clusters vs WCSS for Income vs Spending Score')
+    plt.xlabel('Number of Clusters (K)')
+    plt.ylabel('WCSS')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
-   plt.title('Number of Clusters based on K Value against WCSS for Age v. SS')
-   plt.xlabel('K Value')
-   plt.ylabel('WCSS')
-   # plt.savefig('<name_of_function>.png')
-   plt.show()
+    if silhouette_scores:
+        plt.figure(figsize=(12, 6))
+        plt.plot(range(2, 11), silhouette_scores, marker='o', label='Silhouette Score', color='green')
+        plt.title('Silhouette Score vs Number of Clusters')
+        plt.xlabel('Number of Clusters (K)')
+        plt.ylabel('Silhouette Score')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
 
-def kmean_income_ss(income_score_data):
-   # Based on an arbitrary guess from a visual review of the curve n_clusters = 5
-   kmeans = KMeans(n_clusters = 5)
-   label = kmeans.fit_predict(income_score_data)
+    if davies_bouldin_indices:
+        plt.figure(figsize=(12, 6))
+        plt.plot(range(2, 11), davies_bouldin_indices, marker='o', label='Davies-Bouldin Index', color='purple')
+        plt.title('Davies-Bouldin Index vs Number of Clusters')
+        plt.xlabel('Number of Clusters (K)')
+        plt.ylabel('Davies-Bouldin Index')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
 
-   print(label)
-
-   print(kmeans.cluster_centers_)
-
-   plt.scatter(income_score_data[:,0],income_score_data[:,1], c=kmeans.labels_,cmap = 'rainbow')
-   plt.scatter(kmeans.cluster_centers_[:,0], kmeans.cluster_centers_[:,1], color = 'black')
-   plt.title('ProjectGurukul')
-   plt.xlabel('Annual Income')
-   plt.ylabel('Spending Score (1-100)')
-   # plt.savefig('<name_of_function>.png')
-   plt.show()
+    if silhouette_scores:
+        optimal_k_silhouette = np.argmax(silhouette_scores) + 2
+        print(f"Optimal K based on Silhouette Score: {optimal_k_silhouette}")
+    if davies_bouldin_indices:
+        optimal_k_davies_bouldin = np.argmin(davies_bouldin_indices) + 2
+        print(f"Optimal K based on Davies-Bouldin Index: {optimal_k_davies_bouldin}")
 
 # Cluster for all columns 
 def cluster_all(all_data_columns):
-   wcss=[]
-   for k in range(1,11):
-    kmeans = KMeans(n_clusters = k, init = 'k-means++')
-    kmeans.fit(all_data_columns)
-    wcss.append(kmeans.inertia_)
-   plt.figure(figsize=(12,6))
-   plt.grid()
-   plt.plot(range(1,11), wcss, linewidth = 2, color = 'red', marker = '8')
-   plt.xlabel('K Value')
-   plt.ylabel('WCSS')
-   # plt.savefig('<name_of_function>.png')
-   plt.show()
+ # Lists to store metrics
+ wcss = []
+ silhouette_scores = []
+ davies_bouldin_indices = []
+ 
+ # Loop through a range of K values (starting from 2 for silhouette and Davies-Bouldin)
+ for k in range(1, 11):
+     kmeans = KMeans(n_clusters=k, init='k-means++', random_state=42)
+     kmeans.fit(all_data_columns)
+     wcss.append(kmeans.inertia_)
+     
+     if k > 1:  # Silhouette and Davies-Bouldin require at least 2 clusters
+            labels = kmeans.labels_
+            silhouette_scores.append(silhouette_score(all_data_columns, labels))
+            davies_bouldin_indices.append(davies_bouldin_score(all_data_columns, labels))
+    
+ # Plot WCSS (Elbow Method)
+ plt.figure(figsize=(12, 6))
+ plt.grid()
+ plt.plot(range(1, 11), wcss, linewidth=2, color='red', marker='8')
+ plt.title('Number of Clusters vs. WCSS')
+ plt.xlabel('Number of Clusters (K)')
+ plt.ylabel('WCSS')
+ plt.show()
+ 
+ # Plot Silhouette Scores
+ plt.figure(figsize=(12, 6))
+ plt.grid()
+ plt.plot(range(2, 11), silhouette_scores, linewidth=2, color='blue', marker='o')
+ plt.title('Number of Clusters vs. Silhouette Score')
+ plt.xlabel('Number of Clusters (K)')
+ plt.ylabel('Silhouette Score')
+ plt.show()
+ 
+ # Plot Davies-Bouldin Index
+ plt.figure(figsize=(12, 6))
+ plt.grid()
+ plt.plot(range(2, 11), davies_bouldin_indices, linewidth=2, color='green', marker='s')
+ plt.title('Number of Clusters vs. Davies-Bouldin Index')
+ plt.xlabel('Number of Clusters (K)')
+ plt.ylabel('Davies-Bouldin Index')
+ plt.show()
 
 def kmean_all(all_data_columns, data):
-   # Based on an arbitrary guess from a visual review of the curve n_clusters = 5
-   kmeans = KMeans(n_clusters=5)
+   # Based on an arbitrary guess from a visual review of the curve n_clusters = 7
+   kmeans = KMeans(n_clusters=7)
    
    label = kmeans.fit_predict(all_data_columns)
 
@@ -262,13 +337,15 @@ def kmean_all(all_data_columns, data):
    ax.scatter(data.Age[data.label == 2], data['Annual Income (k$)'][data.label == 2], data['Spending Score (1-100)'][data.label == 2], c = 'green', s = 60)
    ax.scatter(data.Age[data.label == 3], data['Annual Income (k$)'][data.label == 3], data['Spending Score (1-100)'][data.label == 3], c = 'orange', s = 60)
    ax.scatter(data.Age[data.label == 4], data['Annual Income (k$)'][data.label == 4], data['Spending Score (1-100)'][data.label == 4], c = 'purple', s = 60)
+   ax.scatter(data.Age[data.label == 5], data['Annual Income (k$)'][data.label == 5], data['Spending Score (1-100)'][data.label == 5], c = 'brown', s = 60)
+   ax.scatter(data.Age[data.label == 6], data['Annual Income (k$)'][data.label == 6], data['Spending Score (1-100)'][data.label == 6], c = 'grey', s = 60)
    ax.view_init(30,185)
 
    plt.title('K-means clustering for Segmentation of Customers')
    plt.xlabel('Age')
    plt.ylabel('Annual Income')
    ax.set_zlabel('Spending Score (1-100)')
-   # plt.savefig('<name_of_function>.png')
+   plt.savefig('kmean_all.png')
    plt.show()
 
 def main():

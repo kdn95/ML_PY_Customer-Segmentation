@@ -1,5 +1,6 @@
 # Customer Segmentation using K-means Clustering Algorithm :bar_chart: :chart_with_downwards_trend:
 
+
 ## Table of Contents :card_index_dividers:
 - [Overview](#overview)
 - [Customer Segmentation](#what-is-customer-segmentation)
